@@ -1,5 +1,6 @@
 const Tour = require('./../models/tourModel');
 const APIFeatures = require('./../utils/apiFeaters');
+const catchAsync = require('./../utils/catchAsync');
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -8,9 +9,7 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 }
 
-exports.getAllTours = async (req, res) => {
-  try {
-
+exports.getAllTours = catchAsync(async (req, res, next) => {
     // EXECUTE THE QUERY
     const features = new APIFeatures(Tour.find(), req.query)
         .filter()
@@ -35,16 +34,9 @@ exports.getAllTours = async (req, res) => {
         tours,
       },
     });
-  } catch (err) {
-    res.status(404).json({
-      status: 'fail',
-      message: err,
-    });
-  }
-};
+});
 
-exports.getTour = async (req, res) => {
-  try {
+exports.getTour = catchAsync(async (req, res, next) => {
     const tour = await Tour.findById(req.params.id);
     // Tour.findOne({ _id: req.params.id})
 
@@ -54,34 +46,20 @@ exports.getTour = async (req, res) => {
         tour,
       },
     });
-  } catch (err) {
-    res.status(404).json({
-      status: 'fail',
-      message: err,
-    });
-  }
-};
+});
+
 
 // Creating Documents by using Mongoose
-exports.createTour = async (req, res) => {
-  try {
-    // const newTour = new Tour({})
-    // newTour.save()
+exports.createTour = catchAsync(async (req, res, next) => {
+  const newTour = await Tour.create(req.body);
 
-    const newTour = await Tour.create(req.body);
-    res.status(201).json({
-      status: 'success',
-      data: {
-        tour: newTour,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: err,
-    });
-  }
-};
+  res.status(201).json({
+    status: 'success',
+    data: {
+      tour: newTour,
+    },
+  });
+});
 // console.log(req.body);
 
 //     const newId = tours[tours.length -1].id + 1;// Create id usually DataBase creating id autom-y
@@ -98,8 +76,7 @@ exports.createTour = async (req, res) => {
 //         })
 // }
 
-exports.updateTour = async (req, res) => {
-  try {
+exports.updateTour = catchAsync(async (req, res, next) => {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -111,32 +88,18 @@ exports.updateTour = async (req, res) => {
         tour,
       },
     });
-  } catch (err) {
-    res.status(404).json({
-      status: 'fail',
-      message: err,
-    });
-  }
-};
+});
 
-exports.deleteTour = async (req, res) => {
-  try {
+exports.deleteTour = catchAsync(async (req, res, next) => {
     await Tour.findByIdAndDelete(req.params.id);
 
     res.status(204).json({
       status: 'success',
       data: null,
     });
-  } catch (err) {
-    res.status(404).json({
-      status: 'fail',
-      message: err,
-    });
-  }
-};
+});
 
-exports.getTourStats = async (req, res) => {
-  try {
+exports.getTourStats = catchAsync(async (req, res, next) => {
      const stats = await Tour.aggregate([
        {
          $match: { ratingsAverage: { $gte: 4.5 }}
@@ -167,16 +130,9 @@ exports.getTourStats = async (req, res) => {
         stats
       },
     });
-  } catch(err) {
-    res.status(404).json({
-      status: 'fail',
-      message: err
-    });
-  }
-}
+});
 
-exports.getMonthlyPlan = async (req, res) => {
-  try{
+exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
      const year = req.params.year * 1;// 2021
 
      const plan = await Tour.aggregate([
@@ -220,13 +176,7 @@ exports.getMonthlyPlan = async (req, res) => {
         plan
       }
     });
-  } catch(err) {
-    res.status(404).json({
-      status: 'fail',
-      message: err
-    });
-  }
-}
+});
 // By doing aggregate we can do manipulation of data different ways
 //const fs = require('fs');
 
@@ -263,6 +213,17 @@ exports.getMonthlyPlan = async (req, res) => {
 // const id = req.params.id * 1;
 
 // const tour = tours.find(el => el.id === id)
+
+// try {
+//   // const newTour = new Tour({})
+//   // newTour.save()
+//
+// } catch (err) {
+//   res.status(400).json({
+//     status: 'fail',
+//     message: err,
+//   });
+// }
 
 
 
