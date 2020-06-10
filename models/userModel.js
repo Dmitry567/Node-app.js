@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Please provide a password'],
-        minlength: 8 // Most secure password the longest one
+        minlength: 8, // Most secure password the longest one
+        select: false
     },
     passwordConfirm: {
         type: String,
@@ -45,7 +46,17 @@ userSchema.pre('save', async function (next) {
     // Delete  passwordConfirm field
     this.passwordConfirm = undefined;
     next();
-})
+});
+
+userSchema.methods.correctPassword = async function(
+    candidatePassword,
+    userPassword
+) {
+    return await bcrypt.compare(candidatePassword, userPassword);
+    // userPassword is hased but not candidatePassword
+}
+
+
 
 const User = mongoose.model('User', userSchema);
 
