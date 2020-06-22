@@ -1,6 +1,8 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+
 
 // name, email, photo, password, passwordConfirm
 
@@ -17,6 +19,12 @@ const userSchema = new mongoose.Schema({
         validate: [validator.isEmail, 'Please provide a valid email']
     },
     photo: String,
+    role: {
+        type: String,
+        enum: ["user", "lead-guide", "guide", "admin"],
+        default: "admin",
+        required: true
+    },
     password: {
         type: String,
         required: [true, 'Please provide a password'],
@@ -33,7 +41,8 @@ const userSchema = new mongoose.Schema({
             },
             message: 'Passwords are not the same!'
         }
-    }
+    },
+    passwordChangedAt: Date
 });
 
 userSchema.pre('save', async function (next) {
@@ -54,6 +63,17 @@ userSchema.methods.correctPassword = async function(
 ) {
     return await bcrypt.compare(candidatePassword, userPassword);
     // userPassword is hased but not candidatePassword
+}
+
+
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+       if (this.passwordChangedAt) {
+           const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+
+           return JWTTimestamp < changedTimestamp;
+       }
+// False means NOT changed
+        return false;
 }
 
 
