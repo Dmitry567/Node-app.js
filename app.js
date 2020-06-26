@@ -19,6 +19,7 @@ app.use(express.json()); //Create middleware
 app.use(express.static(`${__dirname}/public`));
 
 
+
 // Usually we defined Global Middleware handlers before all Routes
 
 app.use((req, res, next) => {
