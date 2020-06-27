@@ -18,6 +18,8 @@ router.patch(
     authController.updatePassword
 );
 
+router.patch('/updateMe', authController.protect, userController.updateMe);
+
 
 router
     .route('/')// her the root of app
