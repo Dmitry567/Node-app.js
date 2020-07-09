@@ -1,8 +1,7 @@
 const Tour = require('./../models/tourModel');
-const APIFeatures = require('./../utils/apiFeaters');
 const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
+//const AppError = require('./../utils/appError');
 
 
 exports.aliasTopTours = (req, res, next) => {
@@ -12,84 +11,12 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 }
 
-exports.getAllTours = catchAsync(async (req, res, next) => {
-    // EXECUTE THE QUERY
-    const features = new APIFeatures(Tour.find(), req.query)
-        .filter()
-        .sort()
-        .limitFields()
-        .paginate();
-    const tours = await features.query;
-    // query.sort().select().skip().limit()
-
-    // find() method returns the query this is the reason why we can not use chaining here
-    // const tours = Tour.find()
-    //     .where('duration')
-    //     .equals(5)
-    //     .where('difficulty')
-    //     .equals('easy')
-
-    // SEND RESPONSE
-    res.status(200).json({
-      status: 'success',
-      results: tours.length,
-      data: {
-        tours,
-      },
-    });
-});
-
-exports.getTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findById(req.params.id).populate('reviews');
-    // Tour.findOne({ _id: req.params.id})
-
-    if (!tour) {
-       return next(new AppError('No tour found with that ID', 404))
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    });
-});
-
-
-
-
-// console.log(req.body);
-
-//     const newId = tours[tours.length -1].id + 1;// Create id usually DataBase creating id autom-y
-//     const newTour = Object.assign({id: newId}, req.body);
-
-//     tours.push(newTour);
-
-//     fs.writeFile(
-//         `${__dirname}/dev-data/data/tours-simple.json`,
-//         JSON.stringify(tours),
-//         err => {
-
-//             })
-//         })
-// }
 // Creating Documents by using Mongoose
+exports.getAllTours = factory.getAll(Tour);
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 exports.createTour = factory.createOne(Tour);
 exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
-
-// exports.deleteTour = catchAsync(async (req, res, next) => {
-//    const tour = await Tour.findByIdAndDelete(req.params.id);
-//
-//     if (!tour) {
-//         return next(new AppError('No tour found with that ID', 404))
-//     }
-//
-//     res.status(204).json({
-//       status: 'success',
-//       data: null,
-//     });
-// });
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
      const stats = await Tour.aggregate([
